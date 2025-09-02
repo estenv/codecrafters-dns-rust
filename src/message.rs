@@ -1,8 +1,9 @@
 use deku::prelude::*;
 
-#[derive(Default, DekuRead, DekuWrite, PartialEq)]
+#[derive(Default, DekuWrite, PartialEq)]
 pub struct Message {
     header: Header,
+    question: Question,
 }
 
 #[derive(DekuWrite, DekuRead, Debug, PartialEq)]
@@ -43,10 +44,38 @@ impl Default for Header {
             ra: 0,
             z: 0,
             rcode: 0,
-            qdcount: 0,
+            qdcount: 1,
             ancount: 0,
             nscount: 0,
             arcount: 0,
         }
     }
+}
+
+#[derive(DekuWrite, PartialEq)]
+#[deku(endian = "big")]
+pub struct Question {
+    name: Vec<u8>,
+    record_type: u16,
+    class: u16,
+}
+
+impl Default for Question {
+    fn default() -> Self {
+        Self {
+            name: encode_label(&["codecrafters", "io"]),
+            record_type: 1,
+            class: 1,
+        }
+    }
+}
+
+fn encode_label(labels: &[&str]) -> Vec<u8> {
+    let mut result = vec![];
+    for label in labels {
+        result.push(label.len() as u8);
+        result.extend_from_slice(label.as_bytes());
+    }
+    result.push(0);
+    result
 }
