@@ -4,6 +4,7 @@ use deku::prelude::*;
 pub struct Message {
     header: Header,
     question: Question,
+    answer: Answer,
 }
 
 #[derive(DekuWrite, DekuRead, Debug, PartialEq)]
@@ -45,7 +46,7 @@ impl Default for Header {
             z: 0,
             rcode: 0,
             qdcount: 1,
-            ancount: 0,
+            ancount: 1,
             nscount: 0,
             arcount: 0,
         }
@@ -78,4 +79,28 @@ fn encode_label(labels: &[&str]) -> Vec<u8> {
     }
     result.push(0);
     result
+}
+
+#[derive(DekuWrite, PartialEq)]
+#[deku(endian = "big")]
+pub struct Answer {
+    name: Vec<u8>,
+    record_type: u16,
+    class: u16,
+    ttl: u32,
+    data_length: u16,
+    data: Vec<u8>,
+}
+
+impl Default for Answer {
+    fn default() -> Self {
+        Self {
+            name: encode_label(&["codecrafters", "io"]),
+            record_type: 1,
+            class: 1,
+            ttl: 60,
+            data_length: 4,
+            data: vec![8, 8, 8, 8],
+        }
+    }
 }
