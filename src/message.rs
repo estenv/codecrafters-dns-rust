@@ -2,35 +2,35 @@ use deku::prelude::*;
 
 #[derive(Default, DekuWrite, PartialEq)]
 pub struct Message {
-    header: Header,
-    question: Question,
-    answer: Answer,
+    pub header: Header,
+    pub question: Question,
+    pub answer: Answer,
 }
 
 #[derive(DekuWrite, DekuRead, Debug, PartialEq)]
 #[deku(endian = "big")]
 pub struct Header {
-    id: u16,
+    pub id: u16,
     #[deku(bits = 1)]
-    qr: u8,
+    pub qr: u8,
     #[deku(bits = 4)]
-    opcode: u8,
+    pub opcode: u8,
     #[deku(bits = 1)]
-    aa: u8,
+    pub aa: u8,
     #[deku(bits = 1)]
-    tc: u8,
+    pub tc: u8,
     #[deku(bits = 1)]
-    rd: u8,
+    pub rd: u8,
     #[deku(bits = 1)]
-    ra: u8,
+    pub ra: u8,
     #[deku(bits = 3)]
-    z: u8,
+    pub z: u8,
     #[deku(bits = 4)]
-    rcode: u8,
-    qdcount: u16,
-    ancount: u16,
-    nscount: u16,
-    arcount: u16,
+    pub rcode: u8,
+    pub qdcount: u16,
+    pub ancount: u16,
+    pub nscount: u16,
+    pub arcount: u16,
 }
 
 impl Default for Header {
@@ -53,9 +53,10 @@ impl Default for Header {
     }
 }
 
-#[derive(DekuWrite, PartialEq)]
+#[derive(DekuWrite, PartialEq, DekuRead)]
 #[deku(endian = "big")]
 pub struct Question {
+    #[deku(until = "|byte: &u8| *byte == 0")]
     name: Vec<u8>,
     record_type: u16,
     class: u16,
