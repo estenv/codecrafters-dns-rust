@@ -1,6 +1,8 @@
 #[allow(unused_imports)]
 use std::net::UdpSocket;
 
+use codecrafters_dns_server::message::Message;
+
 fn main() {
     println!("Logs from your program will appear here!");
 
@@ -11,7 +13,7 @@ fn main() {
         match udp_socket.recv_from(&mut buf) {
             Ok((size, source)) => {
                 println!("Received {} bytes from {}", size, source);
-                let response = [];
+                let response: Vec<u8> = Message::default().try_into().unwrap();
                 udp_socket
                     .send_to(&response, source)
                     .expect("Failed to send response");
