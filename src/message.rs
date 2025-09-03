@@ -1,6 +1,6 @@
 use deku::prelude::*;
 
-#[derive(Default, DekuWrite, PartialEq)]
+#[derive(Default, DekuWrite, PartialEq, DekuRead)]
 pub struct Message {
     pub header: Header,
     pub question: Question,
@@ -53,13 +53,13 @@ impl Default for Header {
     }
 }
 
-#[derive(DekuWrite, PartialEq, DekuRead)]
+#[derive(Debug, DekuWrite, PartialEq, DekuRead)]
 #[deku(endian = "big")]
 pub struct Question {
     #[deku(until = "|byte: &u8| *byte == 0")]
-    name: Vec<u8>,
-    record_type: u16,
-    class: u16,
+    pub name: Vec<u8>,
+    pub record_type: u16,
+    pub class: u16,
 }
 
 impl Default for Question {
@@ -82,15 +82,17 @@ fn encode_label(labels: &[&str]) -> Vec<u8> {
     result
 }
 
-#[derive(DekuWrite, PartialEq)]
+#[derive(DekuWrite, PartialEq, DekuRead, Debug)]
 #[deku(endian = "big")]
 pub struct Answer {
-    name: Vec<u8>,
-    record_type: u16,
-    class: u16,
-    ttl: u32,
-    data_length: u16,
-    data: Vec<u8>,
+    #[deku(until = "|byte: &u8| *byte == 0")]
+    pub name: Vec<u8>,
+    pub record_type: u16,
+    pub class: u16,
+    pub ttl: u32,
+    pub data_length: u16,
+    #[deku(count = "data_length")]
+    pub data: Vec<u8>,
 }
 
 impl Default for Answer {
