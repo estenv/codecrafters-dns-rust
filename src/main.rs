@@ -1,8 +1,8 @@
 use anyhow::Result;
-use std::net::UdpSocket;
+use std::{io::Cursor, net::UdpSocket};
 
-use codecrafters_dns_server::message::Message;
-use deku::DekuContainerRead;
+use codecrafters_dns_server::message::{Answer, Message};
+use deku::DekuReader;
 
 fn main() -> Result<()> {
     let udp_socket = UdpSocket::bind("127.0.0.1:2053").expect("Failed to bind to address");
@@ -23,15 +23,21 @@ fn read_data(udp_socket: &UdpSocket, buf: &mut [u8]) -> Result<()> {
 }
 
 fn handle_request(data: &[u8]) -> Result<Vec<u8>> {
-    let (_rest, request) = Message::from_bytes((data, 0))?;
-    let mut message = Message::default();
-    message.header.id = request.header.id;
-    message.header.opcode = request.header.opcode;
-    message.header.rd = request.header.rd;
-    message.header.rcode = if request.header.opcode == 0 { 0 } else { 4 };
-    message.question.name = request.question.name.clone();
-    message.answer.name = request.question.name;
+    let mut cursor = Cursor::new(data);
+    let mut reader = deku::reader::Reader::new(&mut cursor);
+    let request = Message::from_reader_with_ctx(&mut reader, ())?;
+    let mut response = Message::new();
+    for question in &request.questions {
+        response.questions.push(question.clone());
+        response.answers.push(Answer::from_question(question));
+    }
+    response.header.id = request.header.id;
+    response.header.opcode = request.header.opcode;
+    response.header.rd = request.header.rd;
+    response.header.rcode = if request.header.opcode == 0 { 0 } else { 4 };
+    response.header.qdcount = response.questions.len() as u16;
+    response.header.ancount = response.answers.len() as u16;
 
-    let response: Vec<u8> = message.try_into().unwrap();
+    let response: Vec<u8> = response.try_into().unwrap();
     Ok(response)
 }
