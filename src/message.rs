@@ -32,7 +32,7 @@ impl Default for Message {
     }
 }
 
-#[derive(DekuWrite, DekuRead, Debug, PartialEq)]
+#[derive(Clone, DekuWrite, DekuRead, Debug, PartialEq)]
 #[deku(endian = "big")]
 pub struct Header {
     pub id: u16,
@@ -169,9 +169,6 @@ fn read_dns_name<R: deku::no_std_io::Read + deku::no_std_io::Seek>(
         reader.read_bytes(1, &mut byte, deku::ctx::Order::Msb0)?;
         let byte = byte[0];
         if byte == 0 {
-            // reader
-            //     .seek(SeekFrom::Current(-1))
-            //     .map_err(|e| DekuError::Io(e.kind()))?;
             break;
         }
         if (byte & 0xc0) == 0xc0 {
@@ -199,8 +196,6 @@ fn read_dns_name<R: deku::no_std_io::Read + deku::no_std_io::Seek>(
             name.push(byte);
             let mut label_bytes = vec![0u8; byte as usize];
             reader.read_bytes(byte as usize, &mut label_bytes, deku::ctx::Order::Msb0)?;
-            // let str = String::from_utf8_lossy(&label_bytes);
-            // dbg!(&str);
             name.extend_from_slice(&label_bytes);
         }
     }

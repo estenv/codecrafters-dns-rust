@@ -10,3 +10,4 @@ anyhow = "1"
 bytes = "1"
 thiserror = "2"
 deku = "*"
+clap = { version = "4", features = ["derive"] } # command line argument parsing
